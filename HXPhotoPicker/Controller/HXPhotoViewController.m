@@ -2552,7 +2552,7 @@ HX_PhotoEditViewControllerDelegate
     
 @interface HXPhotoViewCell ()
 @property (strong, nonatomic) UIImageView *imageView;
-@property (strong, nonatomic) UIView *maskView;
+@property (strong, nonatomic) UIView *bgView;
 @property (copy, nonatomic) NSString *localIdentifier;
 @property (assign, nonatomic) PHImageRequestID requestID;
 @property (assign, nonatomic) PHImageRequestID iCloudRequestID;
@@ -2610,17 +2610,17 @@ HX_PhotoEditViewControllerDelegate
 }
 - (void)setupUI {
     [self.contentView addSubview:self.imageView];
-    [self.contentView addSubview:self.maskView];
+    [self.contentView addSubview:self.bgView];
     [self.contentView addSubview:self.highlightMaskView];
     [self.contentView addSubview:self.progressView];
 }
 - (void)bottomViewPrepareAnimation {
-    [self.maskView.layer removeAllAnimations];
-    self.maskView.alpha = 0;
+    [self.bgView.layer removeAllAnimations];
+    self.bgView.alpha = 0;
 }
 - (void)bottomViewStartAnimation {
     [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-        self.maskView.alpha = 1;
+        self.bgView.alpha = 1;
     } completion:nil];
 }
 - (void)setSingleSelected:(BOOL)singleSelected {
@@ -2655,7 +2655,7 @@ HX_PhotoEditViewControllerDelegate
     if (emptyImage) {
         self.imageView.image = nil;
     }
-    self.maskView.hidden = YES;
+    self.bgView.hidden = YES;
 }
 - (void)setModelDataWithHighQuality:(BOOL)highQuality completion:(void (^)(HXPhotoViewCell *))completion {
     HXPhotoModel *model = self.model;
@@ -2663,11 +2663,11 @@ HX_PhotoEditViewControllerDelegate
     self.editTipIcon.hidden = model.photoEdit ? NO : YES;
     self.progressView.hidden = YES;
     self.progressView.progress = 0;
-    self.maskView.hidden = !self.imageView.image;
+    self.bgView.hidden = !self.imageView.image;
     self.localIdentifier = model.asset.localIdentifier;
     if (model.photoEdit) {
         self.imageView.image = model.photoEdit.editPreviewImage;
-        self.maskView.hidden = NO;
+        self.bgView.hidden = NO;
         if (completion) {
             completion(self);
         }
@@ -2688,7 +2688,7 @@ HX_PhotoEditViewControllerDelegate
                 CGFloat progress = (CGFloat)model.receivedSize / model.expectedSize;
                 self.progressView.progress = progress;
                 if (model.downloadComplete && !model.downloadError) {
-                    self.maskView.hidden = NO;
+                    self.bgView.hidden = NO;
                     if (model.previewPhoto.images.count) {
                         self.imageView.image = nil;
                         self.imageView.image = model.previewPhoto.images.firstObject;
@@ -2710,7 +2710,7 @@ HX_PhotoEditViewControllerDelegate
                                 [weakSelf.progressView showError];
                             }else {
                                 if (image) {
-                                    weakSelf.maskView.hidden = NO;
+                                    weakSelf.bgView.hidden = NO;
                                     if (image.images.count) {
                                         weakSelf.imageView.image = nil;
                                         weakSelf.imageView.image = image.images.firstObject;
@@ -2728,7 +2728,7 @@ HX_PhotoEditViewControllerDelegate
                     }];
                 }
             }else {
-                self.maskView.hidden = NO;
+                self.bgView.hidden = NO;
                 if (completion) {
                     completion(self);
                 }
@@ -2742,8 +2742,8 @@ HX_PhotoEditViewControllerDelegate
                         return;
                     }
                     if ([weakSelf.localIdentifier isEqualToString:model.asset.localIdentifier]) {
-                        if (weakSelf.maskView.hidden) {
-                            weakSelf.maskView.hidden = NO;
+                        if (weakSelf.bgView.hidden) {
+                            weakSelf.bgView.hidden = NO;
                         }
                         weakSelf.imageView.image = image;
                     }
@@ -2761,8 +2761,8 @@ HX_PhotoEditViewControllerDelegate
                         return;
                     }
                     if ([weakSelf.localIdentifier isEqualToString:model.asset.localIdentifier]) {
-                        if (weakSelf.maskView.hidden) {
-                            weakSelf.maskView.hidden = NO;
+                        if (weakSelf.bgView.hidden) {
+                            weakSelf.bgView.hidden = NO;
                         }
                         weakSelf.imageView.image = image;
                     }
@@ -3002,7 +3002,7 @@ HX_PhotoEditViewControllerDelegate
 - (void)layoutSubviews {
     [super layoutSubviews];
     self.imageView.frame = self.bounds;
-    self.maskView.frame = self.bounds;
+    self.bgView.frame = self.bounds;
     self.stateLb.frame = CGRectMake(0, self.hx_h - 18, self.hx_w - 7, 18);
     self.bottomMaskLayer.frame = CGRectMake(0, self.hx_h - 25, self.hx_w, 27);
     [self setSelectBtnFrame];
@@ -3071,20 +3071,20 @@ HX_PhotoEditViewControllerDelegate
     }
     return _imageView;
 }
-- (UIView *)maskView {
-    if (!_maskView) {
-        _maskView = [[UIView alloc] init];
-        [_maskView.layer addSublayer:self.bottomMaskLayer];
-        [_maskView.layer addSublayer:self.selectMaskLayer];
-        [_maskView.layer addSublayer:self.iCloudMaskLayer];
-        [_maskView addSubview:self.iCloudIcon];
-        [_maskView addSubview:self.selectBtn];
-        [_maskView.layer addSublayer:self.videoMaskLayer];
-        [_maskView addSubview:self.stateLb];
-        [_maskView addSubview:self.editTipIcon];
-        [_maskView addSubview:self.videoIcon];
+- (UIView *)bgView {
+    if (!_bgView) {
+        _bgView = [[UIView alloc] init];
+        [_bgView.layer addSublayer:self.bottomMaskLayer];
+        [_bgView.layer addSublayer:self.selectMaskLayer];
+        [_bgView.layer addSublayer:self.iCloudMaskLayer];
+        [_bgView addSubview:self.iCloudIcon];
+        [_bgView addSubview:self.selectBtn];
+        [_bgView.layer addSublayer:self.videoMaskLayer];
+        [_bgView addSubview:self.stateLb];
+        [_bgView addSubview:self.editTipIcon];
+        [_bgView addSubview:self.videoIcon];
     }
-    return _maskView;
+    return _bgView;
 }
 - (UIImageView *)iCloudIcon {
     if (!_iCloudIcon) {
