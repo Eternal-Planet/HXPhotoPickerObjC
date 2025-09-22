@@ -519,11 +519,16 @@
     };
 }
 - (HXPhotoModel *)photoModelWithAsset:(PHAsset *)asset {
+    BOOL isICloud = NO;
+    NSArray <PHAssetResource *> *resources = [PHAssetResource assetResourcesForAsset:asset];
+    if (resources.count > 0) {
+        PHAssetResource *res = resources.firstObject;
+        if ([res.uniformTypeIdentifier containsString:@"icloud"]) {
+            isICloud = YES;
+        }
+    }
     HXPhotoModel *photoModel = [[HXPhotoModel alloc] init];
     photoModel.asset = asset;
-    // ios13之后可能不准，但是无关紧要。
-    // 因为在获取的时候已经做了iCloud判断了。这里只是在展示的时候方便辨别
-    BOOL isICloud = [[asset valueForKey:@"isCloudPlaceholder"] boolValue];
     if (isICloud) {
         if (_iCloudAssetArray.count) {
             if (![_iCloudAssetArray containsObject:asset]) {
@@ -564,9 +569,8 @@
     }
     if (asset.mediaType == PHAssetMediaTypeImage) {
         photoModel.subType = HXPhotoModelMediaSubTypePhoto;
-        if ([[asset valueForKey:@"filename"] hasSuffix:@"GIF"] &&
-            self.configuration.lookGifPhoto) {
-            
+        NSString *filename = resources.firstObject.originalFilename ?: @"";
+        if ([filename hasSuffix:@"GIF"] && self.configuration.lookGifPhoto) {
             photoModel.type = HXPhotoModelMediaTypePhotoGif;
             
         }else if (self.supportLivePhoto &&
